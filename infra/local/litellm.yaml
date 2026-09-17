@@ -1,0 +1,5 @@
+model_list:
+  - model_name: qwen2.5:0.5b
+    litellm_params:
+      model: ollama_chat/qwen2.5:0.5b
+      api_base: http://ollama:11434
