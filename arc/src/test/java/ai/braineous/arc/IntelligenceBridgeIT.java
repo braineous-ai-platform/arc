@@ -8,7 +8,7 @@ class IntelligenceBridgeIT {
 
     @Test
     void test_1() {
-        String requestJson = "{\"model\":\"qwen2.5:0.5b\",\"prompt\":\"Reply with exactly: ARC_OK\",\"stream\":false}";
+        String requestJson = "{\"prompt\":\"Reply with exactly: ARC_OK\",\"stream\":false}";
         String environmentJson = "{}";
 
         IntelligenceBridge intelligenceBridge = new IntelligenceBridge();

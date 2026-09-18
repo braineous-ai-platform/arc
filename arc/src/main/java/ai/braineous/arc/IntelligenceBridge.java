@@ -18,6 +18,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class IntelligenceBridge {
 
+    private static final String MODEL = "qwen2.5:0.5b";
+
     public String invoke(
             String requestJson,
             String environmentJson) {
@@ -26,7 +28,6 @@ public class IntelligenceBridge {
         parseJson(environmentJson, "environmentJson");
 
         JsonObject arcRequest = requireObject(requestElement, "requestJson");
-        String model = requireString(arcRequest, "model", "requestJson.model");
         String prompt = requireString(arcRequest, "prompt", "requestJson.prompt");
         boolean stream = requireBoolean(arcRequest, "stream", "requestJson.stream");
 
@@ -38,7 +39,7 @@ public class IntelligenceBridge {
         messages.add(message);
 
         JsonObject liteLLMRequest = new JsonObject();
-        liteLLMRequest.addProperty("model", model);
+        liteLLMRequest.addProperty("model", MODEL);
         liteLLMRequest.add("messages", messages);
         liteLLMRequest.addProperty("stream", stream);
 

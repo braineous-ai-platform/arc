@@ -30,7 +30,7 @@ import com.google.gson.JsonParseException;
 class IntelligenceBridgeTest {
 
     private static final String REQUEST_JSON =
-            "{\"model\":\"qwen2.5:0.5b\",\"prompt\":\"Reply with exactly: ARC_OK\",\"stream\":false}";
+            "{\"prompt\":\"Reply with exactly: ARC_OK\",\"stream\":false}";
     private static final String ENVIRONMENT_JSON = "{}";
     private static final String RESPONSE_JSON =
             "{\"id\":\"controlled-response\",\"choices\":[{\"message\":{\"content\":\"ARC_OK\"}}]}";
@@ -237,96 +237,82 @@ class IntelligenceBridgeTest {
     @Test
     void test_16() {
         assertRequestFailure(
-                "{\"prompt\":\"prompt\",\"stream\":false}",
-                "requestJson.model is required");
+                "{\"stream\":false}",
+                "requestJson.prompt is required");
     }
 
     @Test
     void test_17() {
         assertRequestFailure(
-                "{\"model\":42,\"prompt\":\"prompt\",\"stream\":false}",
-                "requestJson.model must be a string");
+                "{\"prompt\":42,\"stream\":false}",
+                "requestJson.prompt must be a string");
     }
 
     @Test
     void test_18() {
         assertRequestFailure(
-                "{\"model\":\"model\",\"stream\":false}",
-                "requestJson.prompt is required");
+                "{\"prompt\":\"prompt\"}",
+                "requestJson.stream is required");
     }
 
     @Test
     void test_19() {
         assertRequestFailure(
-                "{\"model\":\"model\",\"prompt\":42,\"stream\":false}",
-                "requestJson.prompt must be a string");
-    }
-
-    @Test
-    void test_20() {
-        assertRequestFailure(
-                "{\"model\":\"model\",\"prompt\":\"prompt\"}",
-                "requestJson.stream is required");
-    }
-
-    @Test
-    void test_21() {
-        assertRequestFailure(
-                "{\"model\":\"model\",\"prompt\":\"prompt\",\"stream\":\"false\"}",
+                "{\"prompt\":\"prompt\",\"stream\":\"false\"}",
                 "requestJson.stream must be a boolean");
     }
 
     @Test
-    void test_22() {
+    void test_20() {
         assertResponseFailure(
                 "{}",
                 "responseJson.choices is required");
     }
 
     @Test
-    void test_23() {
+    void test_21() {
         assertResponseFailure(
                 "{\"choices\":{}}",
                 "responseJson.choices must be an array");
     }
 
     @Test
-    void test_24() {
+    void test_22() {
         assertResponseFailure(
                 "{\"choices\":[]}",
                 "responseJson.choices must not be empty");
     }
 
     @Test
-    void test_25() {
+    void test_23() {
         assertResponseFailure(
                 "{\"choices\":[\"choice\"]}",
                 "responseJson.choices[0] must be an object");
     }
 
     @Test
-    void test_26() {
+    void test_24() {
         assertResponseFailure(
                 "{\"choices\":[{}]}",
                 "responseJson.choices[0].message is required");
     }
 
     @Test
-    void test_27() {
+    void test_25() {
         assertResponseFailure(
                 "{\"choices\":[{\"message\":\"message\"}]}",
                 "responseJson.choices[0].message must be an object");
     }
 
     @Test
-    void test_28() {
+    void test_26() {
         assertResponseFailure(
                 "{\"choices\":[{\"message\":{}}]}",
                 "responseJson.choices[0].message.content is required");
     }
 
     @Test
-    void test_29() {
+    void test_27() {
         assertResponseFailure(
                 "{\"choices\":[{\"message\":{\"content\":42}}]}",
                 "responseJson.choices[0].message.content must be a string");
