@@ -30,28 +30,38 @@ import com.google.gson.JsonParseException;
 class IntelligenceBridgeTest {
 
     private static final String REQUEST_JSON =
-            "{\"model\":\"qwen2.5:0.5b\",\"messages\":[{\"role\":\"user\",\"content\":\"Reply with exactly: ARC_OK\"}],\"temperature\":0,\"seed\":42,\"max_tokens\":16,\"stream\":false}";
+            "{\"model\":\"qwen2.5:0.5b\",\"prompt\":\"Reply with exactly: ARC_OK\",\"stream\":false}";
     private static final String ENVIRONMENT_JSON = "{}";
     private static final String RESPONSE_JSON =
             "{\"id\":\"controlled-response\",\"choices\":[{\"message\":{\"content\":\"ARC_OK\"}}]}";
+    private static final String LITELLM_REQUEST_JSON =
+            "{\"model\":\"qwen2.5:0.5b\",\"messages\":[{\"role\":\"user\",\"content\":\"Reply with exactly: ARC_OK\"}],\"stream\":false}";
 
     @Test
     void test_1() {
-        TestIntelligenceBridge bridge = new TestIntelligenceBridge();
-        bridge.statusCode = 200;
-        bridge.responseBody = RESPONSE_JSON;
+        TestIntelligenceBridge bridge = successfulBridge();
 
-        String responseJson = bridge.invoke(REQUEST_JSON, ENVIRONMENT_JSON);
+        String response = bridge.invoke(REQUEST_JSON, ENVIRONMENT_JSON);
 
-        assertEquals(RESPONSE_JSON, responseJson);
+        assertEquals("ARC_OK", response);
     }
 
     @Test
     void test_2() {
         TestIntelligenceBridge bridge = new TestIntelligenceBridge();
+        bridge.statusCode = 200;
+        bridge.responseBody =
+                "{\"choices\":[{\"message\":{\"content\":\"  line one\\nline two  \"}}]}";
 
+        String response = bridge.invoke(REQUEST_JSON, ENVIRONMENT_JSON);
+
+        assertEquals("  line one\nline two  ", response);
+    }
+
+    @Test
+    void test_3() {
         RuntimeException exception = invokeExpectingRuntimeException(
-                bridge,
+                new TestIntelligenceBridge(),
                 null,
                 ENVIRONMENT_JSON);
 
@@ -59,11 +69,9 @@ class IntelligenceBridgeTest {
     }
 
     @Test
-    void test_3() {
-        TestIntelligenceBridge bridge = new TestIntelligenceBridge();
-
+    void test_4() {
         RuntimeException exception = invokeExpectingRuntimeException(
-                bridge,
+                new TestIntelligenceBridge(),
                 "   ",
                 ENVIRONMENT_JSON);
 
@@ -71,11 +79,9 @@ class IntelligenceBridgeTest {
     }
 
     @Test
-    void test_4() {
-        TestIntelligenceBridge bridge = new TestIntelligenceBridge();
-
+    void test_5() {
         RuntimeException exception = invokeExpectingRuntimeException(
-                bridge,
+                new TestIntelligenceBridge(),
                 "{",
                 ENVIRONMENT_JSON);
 
@@ -84,11 +90,9 @@ class IntelligenceBridgeTest {
     }
 
     @Test
-    void test_5() {
-        TestIntelligenceBridge bridge = new TestIntelligenceBridge();
-
+    void test_6() {
         RuntimeException exception = invokeExpectingRuntimeException(
-                bridge,
+                new TestIntelligenceBridge(),
                 REQUEST_JSON,
                 null);
 
@@ -96,11 +100,9 @@ class IntelligenceBridgeTest {
     }
 
     @Test
-    void test_6() {
-        TestIntelligenceBridge bridge = new TestIntelligenceBridge();
-
+    void test_7() {
         RuntimeException exception = invokeExpectingRuntimeException(
-                bridge,
+                new TestIntelligenceBridge(),
                 REQUEST_JSON,
                 "   ");
 
@@ -108,11 +110,9 @@ class IntelligenceBridgeTest {
     }
 
     @Test
-    void test_7() {
-        TestIntelligenceBridge bridge = new TestIntelligenceBridge();
-
+    void test_8() {
         RuntimeException exception = invokeExpectingRuntimeException(
-                bridge,
+                new TestIntelligenceBridge(),
                 REQUEST_JSON,
                 "{");
 
@@ -121,10 +121,9 @@ class IntelligenceBridgeTest {
     }
 
     @Test
-    void test_8() {
-        TestIntelligenceBridge bridge = new TestIntelligenceBridge();
+    void test_9() {
+        TestIntelligenceBridge bridge = successfulBridge();
         bridge.statusCode = 503;
-        bridge.responseBody = RESPONSE_JSON;
 
         RuntimeException exception = invokeExpectingRuntimeException(
                 bridge,
@@ -137,7 +136,7 @@ class IntelligenceBridgeTest {
     }
 
     @Test
-    void test_9() {
+    void test_10() {
         TestIntelligenceBridge bridge = new TestIntelligenceBridge();
         IOException failure = new IOException("controlled I/O failure");
         bridge.ioException = failure;
@@ -152,7 +151,7 @@ class IntelligenceBridgeTest {
     }
 
     @Test
-    void test_10() {
+    void test_11() {
         TestIntelligenceBridge bridge = new TestIntelligenceBridge();
         InterruptedException failure = new InterruptedException("controlled interruption");
         bridge.interruptedException = failure;
@@ -175,7 +174,7 @@ class IntelligenceBridgeTest {
     }
 
     @Test
-    void test_11() {
+    void test_12() {
         TestIntelligenceBridge bridge = new TestIntelligenceBridge();
         bridge.statusCode = 200;
         bridge.responseBody = null;
@@ -189,7 +188,7 @@ class IntelligenceBridgeTest {
     }
 
     @Test
-    void test_12() {
+    void test_13() {
         TestIntelligenceBridge bridge = new TestIntelligenceBridge();
         bridge.statusCode = 200;
         bridge.responseBody = "   ";
@@ -203,7 +202,7 @@ class IntelligenceBridgeTest {
     }
 
     @Test
-    void test_13() {
+    void test_14() {
         TestIntelligenceBridge bridge = new TestIntelligenceBridge();
         bridge.statusCode = 200;
         bridge.responseBody = "{";
@@ -218,10 +217,8 @@ class IntelligenceBridgeTest {
     }
 
     @Test
-    void test_14() {
-        TestIntelligenceBridge bridge = new TestIntelligenceBridge();
-        bridge.statusCode = 200;
-        bridge.responseBody = RESPONSE_JSON;
+    void test_15() {
+        TestIntelligenceBridge bridge = successfulBridge();
 
         bridge.invoke(REQUEST_JSON, ENVIRONMENT_JSON);
 
@@ -234,7 +231,134 @@ class IntelligenceBridgeTest {
         assertEquals(
                 "application/json",
                 capturedRequest.headers().firstValue("Content-Type").orElse(null));
-        assertEquals(REQUEST_JSON, readRequestBody(capturedRequest));
+        assertEquals(LITELLM_REQUEST_JSON, readRequestBody(capturedRequest));
+    }
+
+    @Test
+    void test_16() {
+        assertRequestFailure(
+                "{\"prompt\":\"prompt\",\"stream\":false}",
+                "requestJson.model is required");
+    }
+
+    @Test
+    void test_17() {
+        assertRequestFailure(
+                "{\"model\":42,\"prompt\":\"prompt\",\"stream\":false}",
+                "requestJson.model must be a string");
+    }
+
+    @Test
+    void test_18() {
+        assertRequestFailure(
+                "{\"model\":\"model\",\"stream\":false}",
+                "requestJson.prompt is required");
+    }
+
+    @Test
+    void test_19() {
+        assertRequestFailure(
+                "{\"model\":\"model\",\"prompt\":42,\"stream\":false}",
+                "requestJson.prompt must be a string");
+    }
+
+    @Test
+    void test_20() {
+        assertRequestFailure(
+                "{\"model\":\"model\",\"prompt\":\"prompt\"}",
+                "requestJson.stream is required");
+    }
+
+    @Test
+    void test_21() {
+        assertRequestFailure(
+                "{\"model\":\"model\",\"prompt\":\"prompt\",\"stream\":\"false\"}",
+                "requestJson.stream must be a boolean");
+    }
+
+    @Test
+    void test_22() {
+        assertResponseFailure(
+                "{}",
+                "responseJson.choices is required");
+    }
+
+    @Test
+    void test_23() {
+        assertResponseFailure(
+                "{\"choices\":{}}",
+                "responseJson.choices must be an array");
+    }
+
+    @Test
+    void test_24() {
+        assertResponseFailure(
+                "{\"choices\":[]}",
+                "responseJson.choices must not be empty");
+    }
+
+    @Test
+    void test_25() {
+        assertResponseFailure(
+                "{\"choices\":[\"choice\"]}",
+                "responseJson.choices[0] must be an object");
+    }
+
+    @Test
+    void test_26() {
+        assertResponseFailure(
+                "{\"choices\":[{}]}",
+                "responseJson.choices[0].message is required");
+    }
+
+    @Test
+    void test_27() {
+        assertResponseFailure(
+                "{\"choices\":[{\"message\":\"message\"}]}",
+                "responseJson.choices[0].message must be an object");
+    }
+
+    @Test
+    void test_28() {
+        assertResponseFailure(
+                "{\"choices\":[{\"message\":{}}]}",
+                "responseJson.choices[0].message.content is required");
+    }
+
+    @Test
+    void test_29() {
+        assertResponseFailure(
+                "{\"choices\":[{\"message\":{\"content\":42}}]}",
+                "responseJson.choices[0].message.content must be a string");
+    }
+
+    private TestIntelligenceBridge successfulBridge() {
+        TestIntelligenceBridge bridge = new TestIntelligenceBridge();
+        bridge.statusCode = 200;
+        bridge.responseBody = RESPONSE_JSON;
+        return bridge;
+    }
+
+    private void assertRequestFailure(String requestJson, String expectedMessage) {
+        RuntimeException exception = invokeExpectingRuntimeException(
+                new TestIntelligenceBridge(),
+                requestJson,
+                ENVIRONMENT_JSON);
+
+        assertEquals(expectedMessage, exception.getMessage());
+    }
+
+    private void assertResponseFailure(String responseJson, String expectedMessage) {
+        TestIntelligenceBridge bridge = new TestIntelligenceBridge();
+        bridge.statusCode = 200;
+        bridge.responseBody = responseJson;
+
+        RuntimeException exception = invokeExpectingRuntimeException(
+                bridge,
+                REQUEST_JSON,
+                ENVIRONMENT_JSON);
+
+        assertEquals(expectedMessage, exception.getMessage());
     }
 
     private RuntimeException invokeExpectingRuntimeException(
