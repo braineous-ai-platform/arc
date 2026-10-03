@@ -51,44 +51,44 @@ public class IntelligenceBridge {
                 .POST(HttpRequest.BodyPublishers.ofString(liteLLMRequestJson))
                 .build();
 
-        System.out.println("____arc.outbound.method____");
-        System.out.println(request.method());
-        System.out.println("____arc.outbound.uri____");
-        System.out.println(request.uri().toString());
-        System.out.println("____arc.outbound.headers____");
-        request.headers().map().forEach((name, values) -> {
-            for (String value : values) {
-                System.out.println(name + ": " + value);
-            }
-        });
-        System.out.println("____arc.outbound.timeout____");
-        System.out.println(request.timeout());
-        System.out.println("____arc.outbound.version____");
-        System.out.println(request.version());
-        System.out.println("____arc.outbound.expectContinue____");
-        System.out.println(request.expectContinue());
-        System.out.println("____arc.outbound.body____");
-        System.out.print(liteLLMRequestJson);
-        System.out.print("\n");
-        System.out.println("____arc.outbound.body.end____");
-        System.out.println("____arc.prototype.artifact2____");
-        System.out.print(liteLLMRequestJson);
-        System.out.print("\n");
-        try {
-            java.nio.file.Files.write(
-                    java.nio.file.Path.of("/tmp/artifact2-body.txt"),
-                    liteLLMRequestJson.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-        } catch (IOException ignored) {
-        }
+        // System.out.println("____arc.outbound.method____");
+        // System.out.println(request.method());
+        // System.out.println("____arc.outbound.uri____");
+        // System.out.println(request.uri().toString());
+        // System.out.println("____arc.outbound.headers____");
+        // request.headers().map().forEach((name, values) -> {
+        //     for (String value : values) {
+        //         System.out.println(name + ": " + value);
+        //     }
+        // });
+        // System.out.println("____arc.outbound.timeout____");
+        // System.out.println(request.timeout());
+        // System.out.println("____arc.outbound.version____");
+        // System.out.println(request.version());
+        // System.out.println("____arc.outbound.expectContinue____");
+        // System.out.println(request.expectContinue());
+        // System.out.println("____arc.outbound.body____");
+        // System.out.print(liteLLMRequestJson);
+        // System.out.print("\n");
+        // System.out.println("____arc.outbound.body.end____");
+        // System.out.println("____arc.prototype.artifact2____");
+        // System.out.print(liteLLMRequestJson);
+        // System.out.print("\n");
+        // try {
+        //     java.nio.file.Files.write(
+        //             java.nio.file.Path.of("/tmp/artifact2-body.txt"),
+        //             liteLLMRequestJson.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        // } catch (IOException ignored) {
+        // }
 
         HttpResponse<String> response;
         try {
             response = send(request);
-            System.out.println("____arc.prototype.artifact2.response____");
-            System.out.print(response.body());
-            System.out.print("\n");
-            System.out.println("____arc.outbound.status____");
-            System.out.println(response.statusCode());
+            // System.out.println("____arc.prototype.artifact2.response____");
+            // System.out.print(response.body());
+            // System.out.print("\n");
+            // System.out.println("____arc.outbound.status____");
+            // System.out.println(response.statusCode());
         } catch (IOException exception) {
             throw new RuntimeException("LiteLLM invocation failed", exception);
         } catch (InterruptedException exception) {
