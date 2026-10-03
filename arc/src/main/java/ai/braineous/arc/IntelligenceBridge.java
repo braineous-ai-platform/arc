@@ -40,20 +40,55 @@ public class IntelligenceBridge {
 
         JsonObject liteLLMRequest = new JsonObject();
         liteLLMRequest.addProperty("model", MODEL);
+        liteLLMRequest.addProperty("max_tokens", 256);
         liteLLMRequest.add("messages", messages);
-        liteLLMRequest.addProperty("stream", stream);
 
         String liteLLMRequestJson = liteLLMRequest.toString();
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:4000/v1/chat/completions"))
+                .uri(URI.create("http://localhost:4000/v1/messages"))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(liteLLMRequestJson))
                 .build();
 
+        System.out.println("____arc.outbound.method____");
+        System.out.println(request.method());
+        System.out.println("____arc.outbound.uri____");
+        System.out.println(request.uri().toString());
+        System.out.println("____arc.outbound.headers____");
+        request.headers().map().forEach((name, values) -> {
+            for (String value : values) {
+                System.out.println(name + ": " + value);
+            }
+        });
+        System.out.println("____arc.outbound.timeout____");
+        System.out.println(request.timeout());
+        System.out.println("____arc.outbound.version____");
+        System.out.println(request.version());
+        System.out.println("____arc.outbound.expectContinue____");
+        System.out.println(request.expectContinue());
+        System.out.println("____arc.outbound.body____");
+        System.out.print(liteLLMRequestJson);
+        System.out.print("\n");
+        System.out.println("____arc.outbound.body.end____");
+        System.out.println("____arc.prototype.artifact2____");
+        System.out.print(liteLLMRequestJson);
+        System.out.print("\n");
+        try {
+            java.nio.file.Files.write(
+                    java.nio.file.Path.of("/tmp/artifact2-body.txt"),
+                    liteLLMRequestJson.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        } catch (IOException ignored) {
+        }
+
         HttpResponse<String> response;
         try {
             response = send(request);
+            System.out.println("____arc.prototype.artifact2.response____");
+            System.out.print(response.body());
+            System.out.print("\n");
+            System.out.println("____arc.outbound.status____");
+            System.out.println(response.statusCode());
         } catch (IOException exception) {
             throw new RuntimeException("LiteLLM invocation failed", exception);
         } catch (InterruptedException exception) {
@@ -71,50 +106,49 @@ public class IntelligenceBridge {
         JsonElement responseElement = parseJson(responseJson, "responseJson");
         JsonObject responseObject = requireObject(responseElement, "responseJson");
 
-        if (!responseObject.has("choices")) {
-            throw new RuntimeException("responseJson.choices is required");
+        if (!responseObject.has("content")) {
+            throw new RuntimeException("responseJson.content is required");
         }
 
-        JsonElement choicesElement = responseObject.get("choices");
-        if (!choicesElement.isJsonArray()) {
-            throw new RuntimeException("responseJson.choices must be an array");
+        JsonElement contentElement = responseObject.get("content");
+        if (!contentElement.isJsonArray()) {
+            throw new RuntimeException("responseJson.content must be an array");
         }
 
-        JsonArray choices = choicesElement.getAsJsonArray();
-        if (choices.isEmpty()) {
-            throw new RuntimeException("responseJson.choices must not be empty");
+        JsonArray content = contentElement.getAsJsonArray();
+        if (content.isEmpty()) {
+            throw new RuntimeException("responseJson.content must not be empty");
         }
 
-        JsonElement firstChoiceElement = choices.get(0);
-        if (!firstChoiceElement.isJsonObject()) {
-            throw new RuntimeException("responseJson.choices[0] must be an object");
+        String generatedText = null;
+        for (JsonElement partElement : content) {
+            if (!partElement.isJsonObject()) {
+                continue;
+            }
+
+            JsonObject part = partElement.getAsJsonObject();
+            if (!part.has("type")
+                    || !part.get("type").isJsonPrimitive()
+                    || !"text".equals(part.get("type").getAsString())) {
+                continue;
+            }
+
+            if (!part.has("text")
+                    || !part.get("text").isJsonPrimitive()
+                    || !part.get("text").getAsJsonPrimitive().isString()) {
+                throw new RuntimeException(
+                        "responseJson.content generated text must be a string");
+            }
+
+            generatedText = part.get("text").getAsString();
+            break;
         }
 
-        JsonObject firstChoice = firstChoiceElement.getAsJsonObject();
-        if (!firstChoice.has("message")) {
-            throw new RuntimeException("responseJson.choices[0].message is required");
+        if (generatedText == null) {
+            throw new RuntimeException("responseJson.content generated text is required");
         }
 
-        JsonElement messageElement = firstChoice.get("message");
-        if (!messageElement.isJsonObject()) {
-            throw new RuntimeException("responseJson.choices[0].message must be an object");
-        }
-
-        JsonObject responseMessage = messageElement.getAsJsonObject();
-        if (!responseMessage.has("content")) {
-            throw new RuntimeException("responseJson.choices[0].message.content is required");
-        }
-
-        JsonElement contentElement = responseMessage.get("content");
-        if (!contentElement.isJsonPrimitive()
-                || !contentElement.getAsJsonPrimitive().isString()) {
-            throw new RuntimeException(
-                    "responseJson.choices[0].message.content must be a string");
-        }
-
-        String content = contentElement.getAsString();
-
-        return content;
+        return generatedText;
     }
 
     HttpResponse<String> send(HttpRequest request)
