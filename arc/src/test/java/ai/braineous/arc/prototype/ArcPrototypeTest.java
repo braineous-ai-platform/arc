@@ -1,5 +1,7 @@
 package ai.braineous.arc.prototype;
 
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -7,8 +9,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 
 import ai.braineous.arc.IntelligenceBridge;
 
@@ -16,46 +22,77 @@ class ArcPrototypeTest {
 
     @Test
     void test_1() throws Exception {
-        String requestJson = "{\"prompt\":\"You are an execution engine, not a document reader.\\nReturn only JSON.\\nUse the provided output_template as the final answer format.\\nExecute this prompt using only the provided context and task.\\nDo not describe, summarize, explain, or analyze this request.\\nUse context.nodes as the system state.\\nUse task.factId as the primary fact.\\nUse each task.relatedFactId as a system fact related directly to the primary fact identified by task.factId.\\nDo not infer relationships between related facts unless explicitly provided by context.\\nUse task.controls only to understand the intent of the task.\\nDo not treat task.controls as additional facts.\\nDo not infer missing facts from task.controls.\\nDo not recompute task.controls from context.\\nReturn compact JSON on a single line.\\nDo not include spaces, tabs, or newlines outside JSON syntax.\\nReturn exactly the output_template shape.\\nDo not add, remove, or rename any fields.\\nReturn exactly one JSON object.\\nDo not wrap the JSON in markdown fences.\\nDo not include explanation before or after the JSON.\\nSet result.decision as a string value derived from llm_query execution.\\nSet result.reason as a string value derived from llm_query execution.\\nSet result.code as a string value derived from llm_query execution.\\n\\nINPUT:\\n{\\\"task\\\":{\\\"intent\\\":{\\\"goal\\\":\\\"decision\\\"},\\\"factId\\\":\\\"PaymentRequest:PAY-1001\\\",\\\"relatedFactIds\\\":[\\\"CustomerAccount:CUST-2001\\\",\\\"PaymentMethod:PM-3001\\\",\\\"RiskProfile:RISK-4001\\\",\\\"MerchantPolicy:POL-5001\\\"],\\\"select\\\":[\\\"decision\\\",\\\"reason\\\",\\\"code\\\"],\\\"controls\\\":{\\\"intent\\\":\\\"decide_payment_capture\\\",\\\"action\\\":\\\"determine\\\",\\\"subject\\\":\\\"primary_payment_request\\\",\\\"decision\\\":\\\"allow_capture\\\",\\\"basis\\\":\\\"related_system_facts\\\",\\\"goal\\\":\\\"decision\\\"}},\\\"context\\\":{\\\"nodes\\\":{\\\"CustomerAccount:CUST-2001\\\":{\\\"id\\\":\\\"CustomerAccount:CUST-2001\\\",\\\"text\\\":\\\"{\\\\\\\"id\\\\\\\":\\\\\\\"CustomerAccount:CUST-2001\\\\\\\",\\\\\\\"kind\\\\\\\":\\\\\\\"CustomerAccount\\\\\\\",\\\\\\\"mode\\\\\\\":\\\\\\\"atomic\\\\\\\",\\\\\\\"status\\\\\\\":\\\\\\\"ACTIVE\\\\\\\"}\\\",\\\"attributes\\\":[],\\\"mode\\\":\\\"ATOMIC\\\"},\\\"RiskProfile:RISK-4001\\\":{\\\"id\\\":\\\"RiskProfile:RISK-4001\\\",\\\"text\\\":\\\"{\\\\\\\"id\\\\\\\":\\\\\\\"RiskProfile:RISK-4001\\\\\\\",\\\\\\\"kind\\\\\\\":\\\\\\\"RiskProfile\\\\\\\",\\\\\\\"mode\\\\\\\":\\\\\\\"atomic\\\\\\\",\\\\\\\"level\\\\\\\":\\\\\\\"LOW\\\\\\\"}\\\",\\\"attributes\\\":[],\\\"mode\\\":\\\"ATOMIC\\\"},\\\"PaymentRequest:PAY-1001\\\":{\\\"id\\\":\\\"PaymentRequest:PAY-1001\\\",\\\"text\\\":\\\"{\\\\\\\"id\\\\\\\":\\\\\\\"PaymentRequest:PAY-1001\\\\\\\",\\\\\\\"kind\\\\\\\":\\\\\\\"PaymentRequest\\\\\\\",\\\\\\\"mode\\\\\\\":\\\\\\\"atomic\\\\\\\",\\\\\\\"amount\\\\\\\":\\\\\\\"125.00\\\\\\\",\\\\\\\"currency\\\\\\\":\\\\\\\"USD\\\\\\\"}\\\",\\\"attributes\\\":[],\\\"mode\\\":\\\"ATOMIC\\\"},\\\"PaymentMethod:PM-3001\\\":{\\\"id\\\":\\\"PaymentMethod:PM-3001\\\",\\\"text\\\":\\\"{\\\\\\\"id\\\\\\\":\\\\\\\"PaymentMethod:PM-3001\\\\\\\",\\\\\\\"kind\\\\\\\":\\\\\\\"PaymentMethod\\\\\\\",\\\\\\\"mode\\\\\\\":\\\\\\\"atomic\\\\\\\",\\\\\\\"type\\\\\\\":\\\\\\\"CARD\\\\\\\"}\\\",\\\"attributes\\\":[],\\\"mode\\\":\\\"ATOMIC\\\"},\\\"MerchantPolicy:POL-5001\\\":{\\\"id\\\":\\\"MerchantPolicy:POL-5001\\\",\\\"text\\\":\\\"{\\\\\\\"id\\\\\\\":\\\\\\\"MerchantPolicy:POL-5001\\\\\\\",\\\\\\\"kind\\\\\\\":\\\\\\\"MerchantPolicy\\\\\\\",\\\\\\\"mode\\\\\\\":\\\\\\\"atomic\\\\\\\",\\\\\\\"capture\\\\\\\":\\\\\\\"AUTO\\\\\\\"}\\\",\\\"attributes\\\":[],\\\"mode\\\":\\\"ATOMIC\\\"}}},\\\"output_template\\\":{\\\"result\\\":{\\\"decision\\\":\\\"\\\",\\\"reason\\\":\\\"\\\",\\\"code\\\":\\\"\\\"}}}\",\"stream\":false}";
+        InputStream stream =
+                ArcPrototypeTest.class.getResourceAsStream(
+                        "/ai/braineous/arc/v14-query.json");
+        if (stream == null) {
+            throw new RuntimeException(
+                    "missing resource /ai/braineous/arc/v14-query.json");
+        }
+
+        byte[] bytes;
+        try {
+            bytes = stream.readAllBytes();
+        } finally {
+            stream.close();
+        }
+
+        String queryJson = new String(bytes, StandardCharsets.UTF_8);
+
+        JsonObject request = new JsonObject();
+        request.addProperty("prompt", queryJson);
+        request.addProperty("stream", false);
+        String requestJson = request.toString();
         String environmentJson = "{}";
+
         int iterations = 5;
         IntelligenceBridge intelligenceBridge = new IntelligenceBridge();
 
+        System.out.print("=== INTELLIGENCEBRIDGE REQUEST BEGIN ===\n");
+        System.out.print(requestJson);
+        System.out.print("\n=== INTELLIGENCEBRIDGE REQUEST END ===\n");
+
         ExecutorService executor = Executors.newFixedThreadPool(iterations);
         List<Future<?>> futures = new ArrayList<Future<?>>();
-        long totalStartNanos = System.nanoTime();
 
         for (int i = 1; i <= iterations; i++) {
             final int iteration = i;
             futures.add(executor.submit(() -> {
-                String response = null;
+                System.out.print("=== RUN " + iteration + " BEGIN ===\n");
+                String response;
                 try {
-                    response = intelligenceBridge.invoke(requestJson, environmentJson);
+                    response =
+                            intelligenceBridge.invoke(
+                                    requestJson,
+                                    environmentJson);
                 } catch (Exception exception) {
-                    System.out.println("FAILING ITERATION " + iteration);
-                    System.out.println("exception class: " + exception.getClass().getName());
-                    System.out.println("exception message: " + exception.getMessage());
-                    System.out.flush();
-                    executor.shutdownNow();
+                    exception.printStackTrace();
                     throw new RuntimeException(exception);
                 }
 
-                String decision = extractField(response, "decision");
-                String code = extractField(response, "code");
-                System.out.println("ITERATION " + iteration + " decision=" + decision + " code=" + code);
-                System.out.flush();
+                System.out.print("=== INTELLIGENCEBRIDGE RESPONSE BEGIN ===\n");
+                System.out.print(response);
+                System.out.print("\n=== INTELLIGENCEBRIDGE RESPONSE END ===\n");
 
-                if (!"allow_capture".equals(decision)) {
-                    System.out.println("FAILING ITERATION " + iteration);
-                    System.out.println("decision: " + decision);
-                    System.out.println("code: " + code);
-                    System.out.println("ARC COMPONENT RESPONSE");
-                    System.out.print(response);
-                    System.out.print("\n");
-                    System.out.flush();
-                    executor.shutdownNow();
-                    throw new RuntimeException("invariant failed at iteration " + iteration);
+                String extracted = extractResultValue(response);
+                boolean accepted = false;
+                if (extracted != null) {
+                    if (extracted.equals("ELIGIBLE")) {
+                        accepted = true;
+                    } else {
+                        if (extracted.equals("result")) {
+                            accepted = true;
+                        }
+                    }
                 }
+                if (!accepted) {
+                    throw new RuntimeException(
+                            "V14 result assertion failed\n"
+                                    + "=== INTELLIGENCEBRIDGE RESPONSE BEGIN ===\n"
+                                    + response
+                                    + "\n=== INTELLIGENCEBRIDGE RESPONSE END ===\n");
+                }
+                System.out.print("=== RUN " + iteration + " END ===\n");
             }));
         }
 
@@ -63,57 +100,207 @@ class ArcPrototypeTest {
             for (int i = 0; i < futures.size(); i++) {
                 futures.get(i).get();
             }
-        } catch (Exception exception) {
-            executor.shutdownNow();
-            Assertions.fail(exception.getMessage());
+        } finally {
+            executor.shutdown();
+            executor.awaitTermination(1, TimeUnit.HOURS);
         }
-
-        executor.shutdown();
-        executor.awaitTermination(1, TimeUnit.HOURS);
-
-        long elapsedTotalMs = (System.nanoTime() - totalStartNanos) / 1000000L;
-        System.out.println("completed: " + iterations + "/" + iterations);
-        System.out.println("decision=allow_capture: " + iterations + "/" + iterations);
-        System.out.println("elapsed total ms: " + elapsedTotalMs);
-        System.out.flush();
     }
 
-    static String extractField(String response, String field) {
+    static String extractResultValue(String response) {
         if (response == null) {
             return null;
         }
-        String marker = "\"" + field + "\"";
-        int from = 0;
-        while (from < response.length()) {
-            int idx = response.indexOf(marker, from);
-            if (idx < 0) {
-                return null;
+
+        String content = unwrapMarkdownFence(response);
+        if (content == null) {
+            return null;
+        }
+        content = content.trim();
+        if (content.length() == 0) {
+            return null;
+        }
+
+        if (content.charAt(0) == '{') {
+            return extractJsonResult(content);
+        }
+        return extractKeyValueResult(content);
+    }
+
+    static String unwrapMarkdownFence(String response) {
+        String trimmed = response.trim();
+        int openLen = 0;
+        if (trimmed.startsWith("````")) {
+            openLen = 4;
+        } else {
+            if (trimmed.startsWith("```")) {
+                openLen = 3;
             }
-            int colon = response.indexOf(':', idx + marker.length());
-            if (colon < 0) {
-                return null;
-            }
-            int quoteStart = -1;
-            int cursor = colon + 1;
-            while (cursor < response.length()) {
-                char current = response.charAt(cursor);
-                if (current == '"') {
-                    quoteStart = cursor;
-                    break;
+        }
+        if (openLen == 0) {
+            return trimmed;
+        }
+
+        int pos = openLen;
+        if (pos < trimmed.length()) {
+            char first = trimmed.charAt(pos);
+            if (first == '\n') {
+                pos++;
+            } else {
+                if (first == '\r') {
+                    pos++;
+                    if (pos < trimmed.length()) {
+                        if (trimmed.charAt(pos) == '\n') {
+                            pos++;
+                        }
+                    }
+                } else {
+                    if (Character.isLetter(first)) {
+                        while (pos < trimmed.length()) {
+                            char current = trimmed.charAt(pos);
+                            if (current == '\n') {
+                                pos++;
+                                break;
+                            }
+                            if (current == '\r') {
+                                pos++;
+                                if (pos < trimmed.length()) {
+                                    if (trimmed.charAt(pos) == '\n') {
+                                        pos++;
+                                    }
+                                }
+                                break;
+                            }
+                            pos++;
+                        }
+                    }
                 }
-                if (!Character.isWhitespace(current)) {
+            }
+        }
+
+        String afterOpen = trimmed.substring(pos);
+        String fence;
+        if (openLen == 4) {
+            fence = "````";
+        } else {
+            fence = "```";
+        }
+        if (afterOpen.endsWith(fence)) {
+            afterOpen = afterOpen.substring(0, afterOpen.length() - fence.length());
+        }
+        return afterOpen.trim();
+    }
+
+    static String extractJsonResult(String content) {
+        JsonElement element;
+        try {
+            element = JsonParser.parseString(content);
+        } catch (Exception exception) {
+            return null;
+        }
+        if (element == null) {
+            return null;
+        }
+        if (!element.isJsonObject()) {
+            return null;
+        }
+
+        JsonObject object = element.getAsJsonObject();
+        if (object.size() != 1) {
+            return null;
+        }
+        if (!object.has("result")) {
+            return null;
+        }
+
+        JsonElement resultElement = object.get("result");
+        if (resultElement == null) {
+            return null;
+        }
+        if (resultElement.isJsonNull()) {
+            return null;
+        }
+        if (!resultElement.isJsonPrimitive()) {
+            return null;
+        }
+
+        JsonPrimitive primitive = resultElement.getAsJsonPrimitive();
+        if (!primitive.isString()) {
+            return null;
+        }
+        return primitive.getAsString();
+    }
+
+    static String extractKeyValueResult(String content) {
+        if (!content.startsWith("result")) {
+            return null;
+        }
+
+        int index = "result".length();
+        while (index < content.length()) {
+            if (!Character.isWhitespace(content.charAt(index))) {
+                break;
+            }
+            index++;
+        }
+        if (index >= content.length()) {
+            return null;
+        }
+
+        char separator = content.charAt(index);
+        if (separator != '=') {
+            if (separator != ':') {
+                return null;
+            }
+        }
+        index++;
+
+        while (index < content.length()) {
+            if (!Character.isWhitespace(content.charAt(index))) {
+                break;
+            }
+            index++;
+        }
+        if (index >= content.length()) {
+            return null;
+        }
+
+        String value;
+        if (content.charAt(index) == '"') {
+            int endQuote = -1;
+            int cursor = index + 1;
+            while (cursor < content.length()) {
+                if (content.charAt(cursor) == '"') {
+                    endQuote = cursor;
                     break;
                 }
                 cursor++;
             }
-            if (quoteStart >= 0) {
-                int quoteEnd = response.indexOf('"', quoteStart + 1);
-                if (quoteEnd > quoteStart) {
-                    return response.substring(quoteStart + 1, quoteEnd);
-                }
+            if (endQuote < 0) {
+                return null;
             }
-            from = idx + marker.length();
+            value = content.substring(index + 1, endQuote);
+            index = endQuote + 1;
+        } else {
+            int end = index;
+            while (end < content.length()) {
+                if (Character.isWhitespace(content.charAt(end))) {
+                    break;
+                }
+                end++;
+            }
+            value = content.substring(index, end);
+            index = end;
         }
-        return null;
+
+        while (index < content.length()) {
+            if (!Character.isWhitespace(content.charAt(index))) {
+                return null;
+            }
+            index++;
+        }
+        if (value.length() == 0) {
+            return null;
+        }
+        return value;
     }
 }

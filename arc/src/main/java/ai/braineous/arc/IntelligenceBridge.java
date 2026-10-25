@@ -57,9 +57,9 @@ public class IntelligenceBridge {
 
         HttpResponse<String> response;
         try {
-            System.out.println("=== LITELLM REQUEST BEGIN ===");
-            System.out.println(prettyGson.toJson(JsonParser.parseString(liteLLMRequestJson)));
-            System.out.println("=== LITELLM REQUEST END ===");
+            // System.out.println("=== LITELLM REQUEST BEGIN ===");
+            // System.out.println(prettyGson.toJson(JsonParser.parseString(liteLLMRequestJson)));
+            // System.out.println("=== LITELLM REQUEST END ===");
             response = send(request);
         } catch (IOException exception) {
             throw new RuntimeException("LiteLLM invocation failed", exception);
@@ -70,9 +70,9 @@ public class IntelligenceBridge {
 
         String responseJson = response.body();
 
-        System.out.println("=== LITELLM RESPONSE BEGIN ===");
-        System.out.println(prettyGson.toJson(JsonParser.parseString(responseJson)));
-        System.out.println("=== LITELLM RESPONSE END ===");
+        // System.out.println("=== LITELLM RESPONSE BEGIN ===");
+        // System.out.println(prettyGson.toJson(JsonParser.parseString(responseJson)));
+        // System.out.println("=== LITELLM RESPONSE END ===");
 
         if (response.statusCode() != 200) {
             throw new RuntimeException(
