@@ -6,6 +6,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -51,8 +53,13 @@ public class IntelligenceBridge {
                 .POST(HttpRequest.BodyPublishers.ofString(liteLLMRequestJson))
                 .build();
 
+        Gson prettyGson = new GsonBuilder().setPrettyPrinting().create();
+
         HttpResponse<String> response;
         try {
+            System.out.println("=== LITELLM REQUEST BEGIN ===");
+            System.out.println(prettyGson.toJson(JsonParser.parseString(liteLLMRequestJson)));
+            System.out.println("=== LITELLM REQUEST END ===");
             response = send(request);
         } catch (IOException exception) {
             throw new RuntimeException("LiteLLM invocation failed", exception);
@@ -62,6 +69,10 @@ public class IntelligenceBridge {
         }
 
         String responseJson = response.body();
+
+        System.out.println("=== LITELLM RESPONSE BEGIN ===");
+        System.out.println(prettyGson.toJson(JsonParser.parseString(responseJson)));
+        System.out.println("=== LITELLM RESPONSE END ===");
 
         if (response.statusCode() != 200) {
             throw new RuntimeException(

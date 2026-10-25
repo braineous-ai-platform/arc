@@ -1,0 +1,13 @@
+Execute task.controls.method.
+Resolve task.controls.parameters from context.nodes.
+Use task.controls.expression with the resolved parameters.
+Use task.controls.spec as the definition of the expression.
+Place the computed value in the field named by task.controls.result.
+Return exactly one field named result.
+Return a field called result at any cost.
+Use result=value.
+Return the value as a string.
+No other fields or text.
+
+INPUT:
+{"task":{"controls":{"method":"payment_capture_eligibility","parameters":"CustomerAccount.status, PaymentMethod.type, RiskProfile.level, MerchantPolicy.capture","expression":"CustomerAccount.status is equal to ACTIVE and PaymentMethod.type is equal to CARD and RiskProfile.level is equal to LOW and MerchantPolicy.capture is equal to AUTO","spec":"result: the value corresponding to the expression outcome. Return field: result. Final output: the computed result as the string value of the field named result. The field named result is mandatory as part of the response.","result":"result"}},"context":{"nodes":{"MerchantPolicy:POL-5001":{"id":"MerchantPolicy:POL-5001","text":"{\"id\":\"MerchantPolicy:POL-5001\",\"kind\":\"MerchantPolicy\",\"mode\":\"atomic\",\"capture\":\"AUTO\"}","attributes":[],"mode":"ATOMIC"},"PaymentMethod:PM-3001":{"id":"PaymentMethod:PM-3001","text":"{\"id\":\"PaymentMethod:PM-3001\",\"kind\":\"PaymentMethod\",\"mode\":\"atomic\",\"type\":\"CARD\"}","attributes":[],"mode":"ATOMIC"},"PaymentRequest:PAY-1001":{"id":"PaymentRequest:PAY-1001","text":"{\"id\":\"PaymentRequest:PAY-1001\",\"kind\":\"PaymentRequest\",\"mode\":\"atomic\",\"amount\":\"125.00\",\"currency\":\"USD\"}","attributes":[],"mode":"ATOMIC"},"RiskProfile:RISK-4001":{"id":"RiskProfile:RISK-4001","text":"{\"id\":\"RiskProfile:RISK-4001\",\"kind\":\"RiskProfile\",\"mode\":\"atomic\",\"level\":\"LOW\"}","attributes":[],"mode":"ATOMIC"},"CustomerAccount:CUST-2001":{"id":"CustomerAccount:CUST-2001","text":"{\"id\":\"CustomerAccount:CUST-2001\",\"kind\":\"CustomerAccount\",\"mode\":\"atomic\",\"status\":\"ACTIVE\"}","attributes":[],"mode":"ATOMIC"}}}}
