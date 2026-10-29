@@ -1,0 +1,38 @@
+{
+  "llm_instructions": {
+    "instructions": [
+      "execute a function",
+      "task.controls.method is the function. context contains its runtime data",
+      "task.controls.parameters are references to values in context",
+      "task.controls.expression is to be calculated, using values from task.controls.parameters. return is the outcome of the calculation",
+      "task.controls.spec defines the reasoning applied to return. task.controls.result is the outcome of that reasoning.",
+      "In task.controls.expression, minus is arithmetic subtraction. The numeric value on the right is subtracted from the numeric value on the left. Both values come from task.controls.parameters.",
+      "respond only with task.controls.result value"
+    ]
+  },
+  "task": {
+    "controls": {
+      "method": "determine_remaining_inventory",
+      "parameters": "Inventory.quantityOnHand, Sales.quantitySold",
+      "expression": "return=Inventory.quantityOnHand minus Sales.quantitySold",
+      "spec": "The calculated value of return is the accepted outcome",
+      "result" : ""
+    }
+  },
+  "context": {
+    "nodes": {
+      "Inventory:INV-001": {
+        "id": "Inventory:INV-001",
+        "text": "{\"id\":\"Inventory:INV-001\",\"kind\":\"Inventory\",\"mode\":\"atomic\",\"inventoryId\":\"INV-001\",\"quantityOnHand\":500,\"quantityReserved\":0,\"product\":\"Product:PROD-SHAMPOO-250\",\"location\":\"Location:LOC-001\"}",
+        "attributes": [],
+        "mode": "ATOMIC"
+      },
+      "Sales:SALE-002": {
+        "id": "Sales:SALE-002",
+        "text": "{\"id\":\"Sales:SALE-002\",\"kind\":\"Sales\",\"mode\":\"atomic\",\"saleId\":\"SALE-002\",\"quantitySold\":1,\"product\":\"Product:PROD-SHAMPOO-250\"}",
+        "attributes": [],
+        "mode": "ATOMIC"
+      }
+    }
+  }
+}

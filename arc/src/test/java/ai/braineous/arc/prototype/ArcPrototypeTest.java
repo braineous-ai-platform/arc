@@ -18,7 +18,7 @@ import com.google.gson.JsonPrimitive;
 
 import ai.braineous.arc.IntelligenceBridge;
 
-class ArcPrototypeTest {
+public class ArcPrototypeTest {
 
     @Test
     void test_1() throws Exception {
@@ -106,7 +106,7 @@ class ArcPrototypeTest {
         }
     }
 
-    static String extractResultValue(String response) {
+    public static String extractResultValue(String response) {
         if (response == null) {
             return null;
         }
