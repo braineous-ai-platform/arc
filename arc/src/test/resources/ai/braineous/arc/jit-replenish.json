@@ -1,0 +1,49 @@
+{
+  "llm_instructions": {
+    "instructions": [
+      "execute a function",
+      "task.controls.method is the function. context contains its runtime data",
+      "task.controls.parameters are references to values in context",
+      "task.controls.expression is to be calculated, using values from task.controls.parameters. return is the outcome of the calculation",
+      "task.controls.spec executes in 3 phases:",
+      "phase 1. Definitions: Resolve the meaning of each outcome defined in task.controls.spec.",
+      "phase 2. Evaluation: Evaluate the calculated return value from task.controls.expression against those Definitions.",
+      "phase 3. Resolution: Apply the specified conditions to the Evaluation outcome and assign the outcome to task.controls.result.",
+      "in task.controls.spec phase 2: Evaluation is always same. execute it everytime as Evaluate the calculated return value from task.controls.expression against those Definitions.",
+      "execute task.controls.spec phases in order. return task.controls.result = result",
+      "respond only with task.controls.result value",
+      "All generated responses must be in English."
+    ]
+  },
+  "task": {
+    "controls": {
+      "method": "assess_inventory_operational_readiness",
+      "parameters": "Inventory.quantityOnHand, Inventory.quantityReserved, Sales.quantitySold, Vendor.leadTimeDays",
+      "expression": "return = (Inventory.quantityOnHand - Inventory.quantityReserved) / Sales.quantitySold",
+      "spec": "Definitions: READY = available inventory, REVIEW = unavailable inventory. Resolution: if READY, result = READY else result = REVIEW.",
+      "result": ""
+    }
+  },
+  "context": {
+    "nodes": {
+      "Inventory:INV-001": {
+        "id": "Inventory:INV-001",
+        "text": "{\"id\":\"Inventory:INV-001\",\"kind\":\"Inventory\",\"mode\":\"atomic\",\"inventoryId\":\"INV-001\",\"quantityOnHand\":500,\"quantityReserved\":0,\"product\":\"Product:PROD-SHAMPOO-250\",\"location\":\"Location:LOC-001\"}",
+        "attributes": [],
+        "mode": "ATOMIC"
+      },
+      "Sales:SALE-001": {
+        "id": "Sales:SALE-001",
+        "text": "{\"id\":\"Sales:SALE-001\",\"kind\":\"Sales\",\"mode\":\"atomic\",\"saleId\":\"SALE-001\",\"quantitySold\":25,\"soldAt\":1792584000000,\"product\":\"Product:PROD-SHAMPOO-250\"}",
+        "attributes": [],
+        "mode": "ATOMIC"
+      },
+      "Vendor:VENDOR-001": {
+        "id": "Vendor:VENDOR-001",
+        "text": "{\"id\":\"Vendor:VENDOR-001\",\"kind\":\"Vendor\",\"mode\":\"atomic\",\"vendorId\":\"VENDOR-001\",\"name\":\"Shampoo Supplier\",\"leadTimeDays\":7,\"product\":\"Product:PROD-SHAMPOO-250\"}",
+        "attributes": [],
+        "mode": "ATOMIC"
+      }
+    }
+  }
+}
