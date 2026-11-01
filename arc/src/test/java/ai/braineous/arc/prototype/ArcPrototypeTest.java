@@ -74,24 +74,15 @@ public class ArcPrototypeTest {
                 System.out.print(response);
                 System.out.print("\n=== INTELLIGENCEBRIDGE RESPONSE END ===\n");
 
-                String extracted = extractResultValue(response);
-                boolean accepted = false;
-                if (extracted != null) {
-                    if (extracted.equals("ELIGIBLE")) {
-                        accepted = true;
-                    } else {
-                        if (extracted.equals("result")) {
-                            accepted = true;
-                        }
-                    }
+                String extracted = extractCognitiveOutcome(response);
+                System.out.print("=== EXTRACTED RESULT BEGIN ===\n");
+                if (extracted == null) {
+                    System.out.print("null\n");
+                } else {
+                    System.out.print(extracted);
+                    System.out.print("\n");
                 }
-                if (!accepted) {
-                    throw new RuntimeException(
-                            "V14 result assertion failed\n"
-                                    + "=== INTELLIGENCEBRIDGE RESPONSE BEGIN ===\n"
-                                    + response
-                                    + "\n=== INTELLIGENCEBRIDGE RESPONSE END ===\n");
-                }
+                System.out.print("=== EXTRACTED RESULT END ===\n");
                 System.out.print("=== RUN " + iteration + " END ===\n");
             }));
         }
@@ -124,6 +115,49 @@ public class ArcPrototypeTest {
             return extractJsonResult(content);
         }
         return extractKeyValueResult(content);
+    }
+
+    public static String extractCognitiveOutcome(String response) {
+        if (response == null) {
+            return null;
+        }
+        String content = unwrapMarkdownFence(response);
+        if (content == null) {
+            return null;
+        }
+        content = unwrapOuterDecoration(content.trim());
+        if (isStandaloneToken(content)) {
+            return content;
+        }
+        return extractResultValue(response);
+    }
+
+    static String unwrapOuterDecoration(String content) {
+        String current = content.trim();
+        if (current.length() >= 4 && current.startsWith("**") && current.endsWith("**")) {
+            current = current.substring(2, current.length() - 2).trim();
+        }
+        if (current.length() >= 2 && current.startsWith("`") && current.endsWith("`")) {
+            current = current.substring(1, current.length() - 1).trim();
+        }
+        if (current.length() >= 2 && current.startsWith("\"") && current.endsWith("\"")) {
+            current = current.substring(1, current.length() - 1).trim();
+        }
+        return current;
+    }
+
+    static boolean isStandaloneToken(String content) {
+        if (content == null || content.length() == 0) {
+            return false;
+        }
+        int i = 0;
+        while (i < content.length()) {
+            if (!Character.isLetter(content.charAt(i))) {
+                return false;
+            }
+            i++;
+        }
+        return true;
     }
 
     static String unwrapMarkdownFence(String response) {

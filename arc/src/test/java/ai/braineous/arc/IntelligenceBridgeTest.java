@@ -35,7 +35,7 @@ class IntelligenceBridgeTest {
     private static final String RESPONSE_JSON =
             "{\"id\":\"controlled-response\",\"choices\":[{\"message\":{\"content\":\"ARC_OK\"}}]}";
     private static final String LITELLM_REQUEST_JSON =
-            "{\"model\":\"qwen2.5:0.5b\",\"messages\":[{\"role\":\"user\",\"content\":\"Reply with exactly: ARC_OK\"}],\"stream\":false}";
+            "{\"model\":\"qwen2.5:1.5b\",\"messages\":[{\"role\":\"user\",\"content\":\"Reply with exactly: ARC_OK\"}],\"stream\":false}";
 
     @Test
     void test_1() {

@@ -20,7 +20,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class IntelligenceBridge {
 
-    private static final String MODEL = "qwen2.5:0.5b";
+    private static final String MODEL = "qwen2.5:1.5b";
 
     public String invoke(
             String requestJson,
