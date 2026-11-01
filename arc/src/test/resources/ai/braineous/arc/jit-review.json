@@ -1,0 +1,47 @@
+{
+  "llm_instructions": {
+    "instructions": [
+      "execute a function",
+      "task.controls.method is the function. context contains its runtime data",
+      "task.controls.parameters are references to values in context",
+      "task.controls.expression is to be calculated, using values from task.controls.parameters. return is the outcome of the calculation. return will be an input to task.controls.spec",
+      "task.controls.spec executes in 2 phases:",
+      "phase1=Definitions",
+      "phase2=Resolution",
+      "execute task.controls.spec phase1 and phase2 in order. return task.controls.result = result",
+      "respond only with task.controls.result value",
+      "All generated responses must be in English."
+    ]
+  },
+  "task": {
+    "controls": {
+      "method": "assess_inventory_operational_readiness",
+      "parameters": "Inventory.quantityOnHand, Inventory.quantityReserved, Sales.quantitySold, Vendor.leadTimeDays",
+      "expression": "return = (Inventory.quantityOnHand - Inventory.quantityReserved) / Sales.quantitySold",
+      "spec": "Definitions: REVIEW = return means unavailable, READY = return means available. Resolution: if unavailable, result = REVIEW; if available, result = READY.",
+      "result": ""
+    }
+  },
+  "context": {
+    "nodes": {
+      "Inventory:INV-001": {
+        "id": "Inventory:INV-001",
+        "text": "{\"id\":\"Inventory:INV-001\",\"kind\":\"Inventory\",\"mode\":\"atomic\",\"inventoryId\":\"INV-001\",\"quantityOnHand\":1,\"quantityReserved\":0,\"product\":\"Product:PROD-SHAMPOO-250\",\"location\":\"Location:LOC-001\"}",
+        "attributes": [],
+        "mode": "ATOMIC"
+      },
+      "Sales:SALE-001": {
+        "id": "Sales:SALE-001",
+        "text": "{\"id\":\"Sales:SALE-001\",\"kind\":\"Sales\",\"mode\":\"atomic\",\"saleId\":\"SALE-001\",\"quantitySold\":25,\"soldAt\":1792584000000,\"product\":\"Product:PROD-SHAMPOO-250\"}",
+        "attributes": [],
+        "mode": "ATOMIC"
+      },
+      "Vendor:VENDOR-001": {
+        "id": "Vendor:VENDOR-001",
+        "text": "{\"id\":\"Vendor:VENDOR-001\",\"kind\":\"Vendor\",\"mode\":\"atomic\",\"vendorId\":\"VENDOR-001\",\"name\":\"Shampoo Supplier\",\"leadTimeDays\":7,\"product\":\"Product:PROD-SHAMPOO-250\"}",
+        "attributes": [],
+        "mode": "ATOMIC"
+      }
+    }
+  }
+}
