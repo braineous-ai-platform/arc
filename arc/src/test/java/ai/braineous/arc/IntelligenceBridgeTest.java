@@ -231,7 +231,27 @@ class IntelligenceBridgeTest {
         assertEquals(
                 "application/json",
                 capturedRequest.headers().firstValue("Content-Type").orElse(null));
-        assertEquals(LITELLM_REQUEST_JSON, readRequestBody(capturedRequest));
+
+        com.google.gson.JsonObject liteLLMRequest =
+                com.google.gson.JsonParser.parseString(readRequestBody(capturedRequest))
+                        .getAsJsonObject();
+        assertEquals(3, liteLLMRequest.size());
+        assertTrue(liteLLMRequest.has("model"));
+        assertTrue(liteLLMRequest.get("model").isJsonPrimitive());
+        assertTrue(liteLLMRequest.get("model").getAsJsonPrimitive().isString());
+        assertFalse(liteLLMRequest.get("model").getAsString().isBlank());
+
+        com.google.gson.JsonArray messages = liteLLMRequest.getAsJsonArray("messages");
+        assertEquals(1, messages.size());
+        com.google.gson.JsonObject message = messages.get(0).getAsJsonObject();
+        assertEquals(2, message.size());
+        assertEquals("user", message.get("role").getAsString());
+        assertEquals(
+                "Reply with exactly: ARC_OK",
+                message.get("content").getAsString());
+        assertTrue(liteLLMRequest.get("stream").isJsonPrimitive());
+        assertTrue(liteLLMRequest.get("stream").getAsJsonPrimitive().isBoolean());
+        assertEquals(false, liteLLMRequest.get("stream").getAsBoolean());
     }
 
     @Test

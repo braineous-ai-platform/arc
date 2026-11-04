@@ -10,6 +10,7 @@
       "phase2=Resolution",
       "execute task.controls.spec phase1 and phase2 in order. return task.controls.result = result",
       "respond only with task.controls.result value",
+      "stop immediately after you respond",
       "All generated responses must be in English."
     ]
   },
@@ -17,7 +18,7 @@
     "controls": {
       "parameters": "Inventory.quantityOnHand, Inventory.quantityReserved, Sales.quantitySold, Vendor.leadTimeDays",
       "expression": "return = (Inventory.quantityOnHand - Inventory.quantityReserved) / Sales.quantitySold",
-      "spec": "Definitions: review = return means unavailable, ready = return means available. Resolution: if unavailable, result = review; if available, result = ready.",
+      "spec": "Definitions: success = return means available, fail = return means unavailable. Resolution: if return means available, result = success; if return means unavailable, result = fail.",
       "result": ""
     }
   },
