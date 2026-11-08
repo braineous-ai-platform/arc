@@ -1,0 +1,37 @@
+{
+  "llm_instructions": {
+    "instructions": [
+      "execute a function",
+      "context contains its runtime state",
+      "task.controls.parameters are references to values in context",
+      "phase1=task.controls.spec.Definitions",
+      "phase2=task.controls.spec.Resolution",
+      "execute phase1 followed by phase2 using shared execution state; values assigned in phase1 remain accessible in phase2; assign the final value of result to task.controls.result",
+      "values assigned in phase1 remain accessible in phase2",
+      "assign the value of result to task.controls.result",
+      "respond with exactly the value stored in task.controls.result, without any additional text",
+      "stop immediately after you respond",
+      "All generated responses must be in English."
+    ]
+  },
+  "task": {
+    "controls": {
+      "parameters": "Result.return",
+      "spec": {
+        "Definitions": "if Result.return >= 1, available = true; otherwise, available = false.",
+        "Resolution": "if available = true, result = success; otherwise, result = fail."
+      },
+      "result": ""
+    }
+  },
+  "context": {
+    "nodes": {
+      "Result:RESULT-001": {
+        "id": "Result:RESULT-001",
+        "text": "{\"return\":0}",
+        "attributes": [],
+        "mode": "ATOMIC"
+      }
+    }
+  }
+}
