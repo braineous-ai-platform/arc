@@ -1,0 +1,10 @@
+The calculated result is 5.
+
+Business rule:
+If the calculated result is at least 1,
+the inventory is available.
+If the calculated result is less than 1,
+the inventory is unavailable.
+
+Apply the business rule to the calculated result.
+Is the inventory available or unavailable?
