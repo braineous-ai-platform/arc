@@ -1,0 +1,11 @@
+An inventory availability calculation has already been completed.
+
+The calculated result is 0.
+
+Business rule:
+If the calculated result is greater than or equal to 1,
+the inventory is available.
+Otherwise, the inventory is unavailable.
+
+Based on the calculated result and the business rule,
+is the inventory available or unavailable?
