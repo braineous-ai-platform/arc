@@ -1,0 +1,19 @@
+security investigation
+
+context
+account: emp-042
+location: germany
+device: macbook pro
+failed login attempts: 3
+successful login attempts: 1
+
+rule
+when multiple failed login attempts are followed by
+a successful login attempt,
+the activity warrants a security investigation.
+otherwise, routine monitoring is sufficient.
+
+decision
+based on the context and the rule,
+does this account activity warrant a security investigation
+or routine monitoring?
